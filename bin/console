@@ -10,6 +10,5 @@ require "pry"
 begin
   Pry.start
 ensure
-  include Nyaplot::ExportToWeb
-  close_web
+  Nyaplot::ExportToWeb.shutdown_webserver
 end

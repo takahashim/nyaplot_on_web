@@ -24,7 +24,7 @@ module Nyaplot
 
         %w(INT TERM).each do |sig|
           trap(sig) do
-            close_web
+            shutdown_webserver
           end
         end
         @@server.start
@@ -36,7 +36,7 @@ module Nyaplot
 
     alias_method :show, :show_on_web
 
-    def close_web
+    def shutdown_webserver
       if @@server
         @@server.shutdown
         @@server = nil
@@ -47,6 +47,7 @@ module Nyaplot
         @@web_root = nil
       end
     end
+    module_function :shutdown_webserver
   end
 end
 
