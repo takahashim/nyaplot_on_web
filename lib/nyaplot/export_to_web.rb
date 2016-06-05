@@ -34,7 +34,13 @@ module Nyaplot
       Launchy.open "http://localhost:#{port}/#{filename}"
     end
 
-    alias_method :show, :show_on_web
+    def show
+      if defined? IRuby
+        super
+      else
+        show_on_web
+      end
+    end
 
     def shutdown_webserver
       if @@server
