@@ -7,14 +7,16 @@ require 'nyaplot'
 
 module Nyaplot
   module ExportToWeb
+    @@server = nil
+    @@web_root = nil
+
     def show_on_web(port=28288, filename=nil)
       filename ||= "plot.html"
+      @@web_root ||= Dir.mktmpdir
+      export_html(File.join(@@web_root, filename))
 
-      @web_root ||= Dir.mktmpdir
-      export_html(File.join(@web_root, filename))
-
-      if !@server
-        @server = WEBrick::HTTPServer.new(DocumentRoot: @web_root,
+      if !@@server
+        @@server = WEBrick::HTTPServer.new(DocumentRoot: @@web_root,
                                           Port: port,
                                           ServerType: Thread,
                                           Logger: WEBrick::Log.new(File.open(File::NULL, 'w')),
@@ -22,11 +24,11 @@ module Nyaplot
 
         %w(INT TERM).each do |sig|
           trap(sig) do
-            FileUtils.remove_entry_secure @web_root
-            @server.shutdown
+            close_web
           end
         end
-        @server.start
+        @@server.start
+        $stderr.puts "start server on port #{port}."
       end
 
       Launchy.open "http://localhost:#{port}/#{filename}"
@@ -35,13 +37,14 @@ module Nyaplot
     alias_method :show, :show_on_web
 
     def close_web
-      if @server
-        @server.shutdown
-        @server = nil
+      if @@server
+        @@server.shutdown
+        @@server = nil
+        $stderr.puts "shutdown server"
       end
-      if @web_root
-        FileUtils.remove_entry_secure @web_root
-        @web_root = nil
+      if @@web_root
+        FileUtils.remove_entry_secure @@web_root
+        @@web_root = nil
       end
     end
   end
